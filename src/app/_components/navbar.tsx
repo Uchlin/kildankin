@@ -16,17 +16,14 @@ export async function Navbar({ session }: { session: Session }) {
         <Link href="/participants" className="btn btn-ghost">
           Участники
         </Link>
-        <Link href="/rounds" className="btn btn-ghost">
-          Раунды
-        </Link>
         <Link href="/pairings" className="btn btn-ghost">
           Жеребьёвка
         </Link>
+        <Link href="/rounds" className="btn btn-ghost">
+          Раунды
+        </Link>
         <Link href="/results" className="btn btn-ghost">
           Результаты
-        </Link>
-        <Link href="/standings" className="btn btn-ghost">
-          Таблица
         </Link>
     </div>
   );

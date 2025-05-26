@@ -104,9 +104,9 @@ export default function ParticipantsPageClient({
                                     alert(err.error || "Ошибка при удалении");
                                     }
                                 }}
-                                className="btn btn-xs btn-error"
+                                className="btn btn-ghost p-2 h-0 flex text-xl"
                                 >
-                                ✖
+                                ❌
                                 </button>
                             </td>
                             </tr>

@@ -48,7 +48,7 @@ export function AddParticipantForm({ tournamentId, router }: { tournamentId: str
           <input
             type="text"
             className="input input-bordered w-full mb-2"
-            placeholder="Поиск по имени или фамилии"
+            placeholder="🔎 Поиск по имени или фамилии"
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
           />

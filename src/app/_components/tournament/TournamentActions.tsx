@@ -1,7 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Tournament, User } from "@prisma/client";
+import type { User, Participant } from "@prisma/client";
+
+type FullTournament = {
+  id: string;
+  name: string;
+  roundsCount: number;
+  participantsCount: number;
+  createdAt: Date;
+  ownerId: string;
+  owner?: User;
+  participants: Participant[];
+};
 
 export function TournamentActions({
   tournament,
@@ -9,75 +20,119 @@ export function TournamentActions({
   deleteTournament,
   editTournament,
 }: {
-  tournament: Tournament;
+  tournament: FullTournament;
   users: User[];
   deleteTournament: (formData: FormData) => void;
   editTournament: (formData: FormData) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
 
+  const [formState, setFormState] = useState({
+    name: tournament.name,
+    roundsCount: tournament.roundsCount.toString(),
+    participantsCount: tournament.participantsCount.toString(),
+    ownerId: tournament.ownerId,
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormState((prev) => ({ ...prev, [name]: value }));
+  };
+
   if (isEditing) {
     return (
-      <form action={editTournament} className="flex flex-col gap-2 mt-2">
-        <input type="hidden" name="id" value={tournament.id} />
-        <input
-          name="name"
-          defaultValue={tournament.name}
-          className="input input-sm input-bordered"
-        />
-        <input
-          name="roundsCount"
-          type="number"
-          defaultValue={tournament.roundsCount}
-          className="input input-sm input-bordered"
-        />
-        <input
-          name="participantsCount"
-          type="number"
-          defaultValue={tournament.participantsCount}
-          className="input input-sm input-bordered"
-        />
-        <select name="ownerId" className="select select-sm select-bordered">
-          {users.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.lastName} {u.firstName}
-            </option>
-          ))}
-        </select>
-        <div className="flex gap-2">
-          <button type="submit" className="btn btn-success btn-sm">💾 Сохранить</button>
+      <>
+        <td>
+          <input
+            name="name"
+            value={formState.name}
+            onChange={handleChange}
+            className="input input-sm input-bordered w-full"
+          />
+        </td>
+        <td>
+          <select
+            name="ownerId"
+            value={formState.ownerId}
+            onChange={handleChange}
+            className="select select-sm select-bordered w-full"
+          >
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.lastName} {u.firstName}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <input
+            name="roundsCount"
+            type="number"
+            value={formState.roundsCount}
+            onChange={handleChange}
+            className="input input-sm input-bordered w-full"
+          />
+        </td>
+        <td>
+          <input
+            name="participantsCount"
+            type="number"
+            value={formState.participantsCount}
+            onChange={handleChange}
+            className="input input-sm input-bordered w-full"
+          />
+        </td>
+        <td>{new Date(tournament.createdAt).toLocaleDateString()}</td>
+        <td className="flex gap-2">
+          <form
+            action={editTournament}
+            onSubmit={() => setIsEditing(false)}
+          >
+            <input type="hidden" name="id" value={tournament.id} />
+            <input type="hidden" name="name" value={formState.name} />
+            <input type="hidden" name="ownerId" value={formState.ownerId} />
+            <input type="hidden" name="roundsCount" value={formState.roundsCount} />
+            <input type="hidden" name="participantsCount" value={formState.participantsCount} />
+            <button type="submit" className="btn btn-ghost text-xl">💾</button>
+          </form>
           <button
-            type="button"
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost text-xl"
             onClick={() => setIsEditing(false)}
           >
-            Отмена
+            ❌
           </button>
-        </div>
-      </form>
+        </td>
+      </>
     );
   }
 
   return (
-    <div className="flex gap-2">
-      <form action={deleteTournament}>
-        <input type="hidden" name="id" value={tournament.id} />
+    <>
+      <td>{tournament.name}</td>
+      <td>{tournament.owner?.lastName} {tournament.owner?.firstName}</td>
+      <td>{tournament.roundsCount}</td>
+      <td>{tournament.participants.length} / {tournament.participantsCount}</td>
+      <td>{new Date(tournament.createdAt).toLocaleDateString()}</td>
+      <td className="flex gap-2">
+        <form action={deleteTournament}>
+          <input type="hidden" name="id" value={tournament.id} />
+          <button
+            type="submit"
+            className="btn btn-ghost text-xl"
+            onClick={(e) => {
+              if (!confirm("Удалить турнир?")) e.preventDefault();
+            }}
+          >
+            🗑
+          </button>
+        </form>
         <button
-          type="submit"
-          className="btn btn-xs text-2xl"
-          onClick={(e) => {
-            if (!confirm("Удалить турнир?")) e.preventDefault();
-          }}
+          className="btn btn-ghost text-xl"
+          onClick={() => setIsEditing(true)}
         >
-          🗑
+          ✏
         </button>
-      </form>
-      <button
-        className="btn btn-xs btn-outline"
-        onClick={() => setIsEditing(true)}
-      >
-        ✏ Редактировать
-      </button>
-    </div>
+      </td>
+    </>
   );
 }
