@@ -53,6 +53,7 @@ model VerificationToken {
 model User {
   id            String       @id @default(cuid())
   email         String       @unique
+  emailVerified DateTime?
   firstName     String
   lastName      String
   role          Role         @default(USER)
@@ -68,6 +69,7 @@ model Tournament {
   id             String       @id @default(cuid())
   name           String
   roundsCount    Int
+  participantsCount Int @default(0)
   createdAt      DateTime     @default(now())
 
   owner          User         @relation("OwnerTournaments", fields: [ownerId], references: [id])

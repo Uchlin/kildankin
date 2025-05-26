@@ -61,17 +61,18 @@ async function main() {
       name: "Шахматный Турнир 2025",
       roundsCount: 5,
       ownerId: owner.id,
+      participantsCount: users.length,
     },
   });
 
   // Создание участников турнира
-  const participants = await Promise.all(
+  await Promise.all(
     createdUsers.map((user) =>
       prisma.participant.create({
         data: {
           firstName: user.firstName,
           lastName: user.lastName,
-          rating: Math.floor(Math.random() * 2500 + 1000), // случайный рейтинг
+          rating: Math.floor(Math.random() * 2500 + 1000),
           tournamentId: tournament.id,
           userId: user.id,
         },
