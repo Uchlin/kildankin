@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { PrismaClient, Tournament } from "@prisma/client";
 import { format } from "date-fns";
 import { AddParticipantForm } from "./AddParticipantForm";
+import { EditParticipantRow } from "./EditParticipantRow";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,6 @@ async function fetchTournamentsWithParticipants() {
   });
 }
 
-// Упростим тип для передачи в клиент
 type TournamentWithParticipants = Awaited<ReturnType<typeof fetchTournamentsWithParticipants>>;
 
 export default function ParticipantsPageClient({
@@ -33,7 +33,7 @@ export default function ParticipantsPageClient({
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
-
+  const [editingId, setEditingId] = useState<string | null>(null);
   const handleToggle = (id: string) => {
     setExpanded((prev) => (prev === id ? null : id));
   };
@@ -81,35 +81,50 @@ export default function ParticipantsPageClient({
                     </thead>
                     <tbody>
                         {tournament.participants.map((p) => (
-                            <tr key={p.id}>
-                            <td>{p.lastName}</td>
-                            <td>{p.firstName}</td>
-                            <td>{p.rating}</td>
-                            <td>
-                                <button
-                                onClick={async () => {
-                                    const confirmDelete = confirm(`Удалить ${p.lastName} ${p.firstName}?`);
-                                    if (!confirmDelete) return;
+                          <tr key={p.id}>
+                            {editingId === p.id ? (
+                              <EditParticipantRow participant={p} onCancel={() => setEditingId(null)} onSave={() => {
+                                setEditingId(null);
+                                router.refresh();
+                              }} />
+                            ) : (
+                              <>
+                                <td>{p.lastName}</td>
+                                <td>{p.firstName}</td>
+                                <td>{p.rating}</td>
+                                <td className="flex gap-2">
+                                  <button
+                                    onClick={() => setEditingId(p.id)}
+                                    className="btn btn-ghost text-xl "
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      const confirmDelete = confirm(`Удалить ${p.lastName} ${p.firstName}?`);
+                                      if (!confirmDelete) return;
 
-                                    const res = await fetch("/api/participants/delete", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ participantId: p.id }),
-                                    });
+                                      const res = await fetch("/api/participants/delete", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ participantId: p.id }),
+                                      });
 
-                                    if (res.ok) {
-                                    router.refresh();
-                                    } else {
-                                    const err = await res.json();
-                                    alert(err.error || "Ошибка при удалении");
-                                    }
-                                }}
-                                className="btn btn-ghost p-2 h-0 flex text-xl"
-                                >
-                                ❌
-                                </button>
-                            </td>
-                            </tr>
+                                      if (res.ok) {
+                                        router.refresh();
+                                      } else {
+                                        const err = await res.json();
+                                        alert(err.error || "Ошибка при удалении");
+                                      }
+                                    }}
+                                    className="btn btn-ghost text-xl"
+                                  >
+                                    🗑
+                                  </button>
+                                </td>
+                              </>
+                            )}
+                          </tr>
                         ))}
                     </tbody>
                   </table>
