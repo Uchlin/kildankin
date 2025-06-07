@@ -33,18 +33,12 @@ export function AddTournamentForm({ users, onClose, addTournament }: AddTourname
         required
       />
       <input
-        name="roundsCount"
-        type="number"
-        placeholder="Количество раундов"
-        className="input input-bordered"
-        required
-      />
-      <input
         name="participantsCount"
         type="number"
         placeholder="Количество участников"
         className="input input-bordered"
         required
+        min={2}
       />
       <select name="ownerId" className="select select-bordered" required>
         <option value="">Выберите организатора</option>

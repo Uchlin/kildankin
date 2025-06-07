@@ -36,21 +36,38 @@ export function TournamentActions({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "participantsCount") {
+      const parsed = parseInt(value);
+      const newRounds = estimateSwissRounds(parsed);
+      setFormState((prev) => ({
+        ...prev,
+        participantsCount: value,
+        roundsCount: newRounds.toString(),
+      }));
+    } else {
+      setFormState((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  if (isEditing) {
-    return (
-      <>
-        <td>
+  return isEditing ? (
+    <tr>
+      <td colSpan={6}>
+        <form
+          action={editTournament}
+          onSubmit={() => setIsEditing(false)}
+          className="grid grid-cols-6 gap-2"
+        >
+          <input type="hidden" name="id" value={tournament.id} />
+          <input type="hidden" name="roundsCount" value={formState.roundsCount} />
+
           <input
             name="name"
             value={formState.name}
             onChange={handleChange}
             className="input input-sm input-bordered w-full"
           />
-        </td>
-        <td>
+
           <select
             name="ownerId"
             value={formState.ownerId}
@@ -63,17 +80,13 @@ export function TournamentActions({
               </option>
             ))}
           </select>
-        </td>
-        <td>
           <input
             name="roundsCount"
             type="number"
             value={formState.roundsCount}
-            onChange={handleChange}
+            readOnly
             className="input input-sm input-bordered w-full"
           />
-        </td>
-        <td>
           <input
             name="participantsCount"
             type="number"
@@ -81,34 +94,34 @@ export function TournamentActions({
             onChange={handleChange}
             className="input input-sm input-bordered w-full"
           />
-        </td>
-        <td>{new Date(tournament.createdAt).toLocaleDateString()}</td>
-        <td className="flex gap-2">
-          <form
-            action={editTournament}
-            onSubmit={() => setIsEditing(false)}
-          >
-            <input type="hidden" name="id" value={tournament.id} />
-            <input type="hidden" name="name" value={formState.name} />
-            <input type="hidden" name="ownerId" value={formState.ownerId} />
-            <input type="hidden" name="roundsCount" value={formState.roundsCount} />
-            <input type="hidden" name="participantsCount" value={formState.participantsCount} />
-            <button type="submit" className="btn btn-ghost text-xl">💾</button>
-          </form>
-          <button
-            className="btn btn-ghost text-xl"
-            onClick={() => setIsEditing(false)}
-          >
-            ❌
-          </button>
-        </td>
-      </>
-    );
-  }
 
-  return (
-    <>
-      <td>{tournament.name}</td>
+          <span className="flex items-center justify-center text-sm">
+            {new Date(tournament.createdAt).toLocaleDateString()}
+          </span>
+
+          <div className="flex gap-2 justify-end">
+            <button type="submit" className="btn btn-ghost text-xl">💾</button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="btn btn-ghost text-xl"
+            >
+              ❌
+            </button>
+          </div>
+        </form>
+      </td>
+    </tr>
+  ) : (
+    <tr>
+      <td>
+        <a
+          href={`/tournaments/${tournament.id}`}
+          className="link text-blue-600 hover:underline"
+        >
+          {tournament.name}
+        </a>
+      </td>
       <td>{tournament.owner?.lastName} {tournament.owner?.firstName}</td>
       <td>{tournament.roundsCount}</td>
       <td>{tournament.participants.length} / {tournament.participantsCount}</td>
@@ -133,6 +146,25 @@ export function TournamentActions({
           ✏
         </button>
       </td>
-    </>
+    </tr>
   );
+}
+
+function estimateSwissRounds(N: number): number {
+  if (N == 2) return 1;
+  if (N <= 3) return 2;
+  if (N <= 4) return 3;
+  if (N <= 6) return 4;
+  if (N <= 8) return 5;
+  if (N <= 16) return 6;
+  if (N <= 32) return 7;
+  if (N <= 64) return 8;
+  if (N <= 128) return 9;
+  if (N <= 256) return 10;
+  if (N <= 512) return 11;
+  if (N <= 1024) return 12;
+  if (N <= 2048) return 13;
+  if (N <= 4096) return 14;
+  if (N <= 8192) return 15;
+  return 16;
 }

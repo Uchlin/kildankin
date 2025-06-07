@@ -25,6 +25,19 @@ export default async function TournamentsPage() {
     "use server";
     const id = formData.get("id")?.toString();
     if (!id) return;
+    await prisma.match.deleteMany({
+      where: {
+        round: {
+          tournamentId: id,
+        },
+      },
+    });
+
+    await prisma.round.deleteMany({
+      where: {
+        tournamentId: id,
+      },
+    });
     await prisma.participant.deleteMany({where: { tournamentId: id }});
     await prisma.tournament.delete({ where: { id } });
 
@@ -73,14 +86,13 @@ export default async function TournamentsPage() {
         </thead>
         <tbody>
           {tournaments.map((t) => (
-            <tr key={t.id}>
-              <TournamentActions
-                tournament={t}
-                users={users}
-                deleteTournament={deleteTournament}
-                editTournament={editTournament}
-              />
-            </tr>
+            <TournamentActions
+              key={t.id}
+              tournament={t}
+              users={users}
+              deleteTournament={deleteTournament}
+              editTournament={editTournament}
+            />
           ))}
         </tbody>
       </table>
