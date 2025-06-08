@@ -114,7 +114,7 @@ export function TournamentActions({
     </tr>
   ) : (
     <tr>
-      <td>
+      <td className="p-2 border">
         <a
           href={`/tournaments/${tournament.id}`}
           className="link text-blue-600 hover:underline"
@@ -122,11 +122,11 @@ export function TournamentActions({
           {tournament.name}
         </a>
       </td>
-      <td>{tournament.owner?.lastName} {tournament.owner?.firstName}</td>
-      <td>{tournament.roundsCount}</td>
-      <td>{tournament.participants.length} / {tournament.participantsCount}</td>
-      <td>{new Date(tournament.createdAt).toLocaleDateString()}</td>
-      <td className="flex gap-2">
+      <td className="p-2 border">{tournament.owner?.lastName} {tournament.owner?.firstName}</td>
+      <td className="p-2 border">{tournament.roundsCount}</td>
+      <td className="p-2 border">{tournament.participants.length} / {tournament.participantsCount}</td>
+      <td className="p-2 border">{new Date(tournament.createdAt).toLocaleDateString()}</td>
+      <td className="flex gap-2 p-2 border">
         <form action={deleteTournament}>
           <input type="hidden" name="id" value={tournament.id} />
           <button

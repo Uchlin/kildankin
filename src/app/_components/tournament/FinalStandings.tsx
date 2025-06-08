@@ -59,23 +59,23 @@ export function FinalStandings({
       <table className="table w-full">
         <thead>
           <tr>
-            <th>Место</th>
-            <th>Участник</th>
-            <th>Рейтинг</th>
-            <th>Очки</th>
-            <th>Бухгольц</th>
+            <th className="p-2 border">Место</th>
+            <th className="p-2 border">Участник</th>
+            <th className="p-2 border">Рейтинг</th>
+            <th className="p-2 border">Очки</th>
+            <th className="p-2 border">Бухгольц</th>
           </tr>
         </thead>
         <tbody>
           {standings.map((s, i) => (
             <tr key={s.participant.id}>
-              <td>{i + 1}</td>
-              <td>
+              <td className="p-2 border">{i + 1}</td>
+              <td className="p-2 border">
                 {s.participant.lastName} {s.participant.firstName}
-              </td>
-              <td>{s.participant.rating}</td>
-              <td>{s.points}</td>
-              <td>{s.buchholz}</td>
+              </td >
+              <td className="p-2 border">{s.participant.rating}</td>
+              <td className="p-2 border">{s.points}</td>
+              <td className="p-2 border">{s.buchholz}</td>
             </tr>
           ))}
         </tbody>

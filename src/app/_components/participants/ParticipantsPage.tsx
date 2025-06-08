@@ -73,10 +73,10 @@ export default function ParticipantsPageClient({
                   <table className="table w-full">
                     <thead>
                       <tr>
-                        <th>Фамилия</th>
-                        <th>Имя</th>
-                        <th>Рейтинг</th>
-                        <th></th>
+                        <th className="p-2 border">Фамилия</th>
+                        <th className="p-2 border">Имя</th>
+                        <th className="p-2 border">Рейтинг</th>
+                        <th className="p-2 border">Действия</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -89,10 +89,10 @@ export default function ParticipantsPageClient({
                               }} />
                             ) : (
                               <>
-                                <td>{p.lastName}</td>
-                                <td>{p.firstName}</td>
-                                <td>{p.rating}</td>
-                                <td className="flex gap-2">
+                                <td className="p-2 border">{p.lastName}</td>
+                                <td className="p-2 border">{p.firstName}</td>
+                                <td className="p-2 border">{p.rating}</td>
+                                <td className="flex gap-2 p-2 border">
                                   <button
                                     onClick={() => setEditingId(p.id)}
                                     className="btn btn-ghost text-xl "

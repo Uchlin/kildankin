@@ -73,15 +73,15 @@ export default async function TournamentsPage() {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Список турниров</h1>
       <AddTournamentClient users={users} />
-
-      <table className="table w-full">
+      <table className="table w-full border">
         <thead>
-          <tr>
-            <th>Название</th>
-            <th>Организатор</th>
-            <th>Раунды</th>
-            <th>Участников</th>
-            <th>Создан</th>
+          <tr className=" text-white-600">
+            <th className="p-2 border">Название</th>
+            <th className="p-2 border">Организатор</th>
+            <th className="p-2 border">Раунды</th>
+            <th className="p-2 border">Участников</th>
+            <th className="p-2 border">Создан</th>
+            <th className="p-2 border">Действия</th>
           </tr>
         </thead>
         <tbody>

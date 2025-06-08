@@ -1,56 +1,68 @@
-// // import { auth } from "~/server/auth";
-// // import { api, HydrateClient } from "~/trpc/server";
-// // import { Navbar } from "./../_components/navbar";
-// // import { SigninLink } from "./../_components/signlink";
-// import { db } from "~/server/db";
-// import { AddUser } from "./../_components/user/addUser";
-// import UserTable from "../_components/user/userTable";
+"use client";
 
-// export default async function Home() {
+import { useEffect, useState } from "react";
+import { UserRow } from "../_components/user/UserRow";
+import { AddUserForm } from "../_components/user/AddUserForm";
 
-//   const users = await db.user.findMany();
-// //{users.map((user) => <div key = {user.id}> {user.email} </div>)}</>
-//   return (
-//   <>
-//   <h1>User page</h1>
-//   <AddUser/>
-//       <UserTable users={users}/>
-//   </>
+interface User {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role: "USER" | "ORGANIZER" | "ADMIN";
+}
 
-//   );
-// }
-import React from "react";
-import { db } from "~/server/db";
-import { AddUser } from "../_components/user/addUser";
-import UserTable from "../_components/user/userTable";
-import Pagination from "../ui/pagination";
-import { auth } from "~/server/auth";
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [form, setForm] = useState({ email: "", firstName: "", lastName: "", role: "USER" });
 
+  useEffect(() => {
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then(setUsers);
+  }, []);
 
-export default async function Page(props: {
-  searchParams?: Promise<{
-    size?: string;
-    page?: string;
-  }>;
-}) {
-  const searchParams = await props.searchParams;
-  const page = Number(searchParams?.page) || 1;
-  const size = Number(searchParams?.size) || 3;
+  const handleAdd = async (form: { email: string; firstName: string; lastName: string; role: string }) => {
+    const res = await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    const newUser = await res.json();
+    setUsers([...users, newUser]);
+  };
 
-  const count = await db.user.count();
-  const users = await db.user.findMany({
-    skip: (page - 1) * size,
-    take: size,
-  });
-  const pages = Math.ceil(Number(count) / size);
+  const handleUpdate = (updated: User) => {
+    setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+  };
 
-  const role = (await auth())?.user.role;
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/users/${id}`, { method: "DELETE" });
+    setUsers((prev) => prev.filter((u) => u.id !== id));
+  };
 
   return (
-    <div>
-      <AddUser />
-      {/* {role === "ADMIN" && <AddUser />} */}
-      <UserTable users={users} />
-      <Pagination totalPages={pages} />
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">Пользователи</h1>
+
+      <AddUserForm onAddUser={handleAdd} />
+
+      <table className="table w-full border">
+        <thead>
+          <tr className=" text-white-600">
+            <th className="p-2 border">Email</th>
+            <th className="p-2 border">Имя</th>
+            <th className="p-2 border">Фамилия</th>
+            <th className="p-2 border">Роль</th>
+            <th className="p-2 border">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => (
+            <UserRow key={u.id} user={u} onUpdate={handleUpdate} onDelete={handleDelete} />
+          ))}
+        </tbody>
+      </table>
     </div>
-  )}
+  );
+}

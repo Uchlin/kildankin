@@ -10,20 +10,14 @@ export async function Navbar({ session }: { session: Session }) {
       <Link href="/" className="btn btn-ghost">
           Главная
         </Link>
+        <Link href="/user" className="btn btn-ghost">
+          Пользователи
+        </Link>
         <Link href="/tournaments" className="btn btn-ghost">
           Турниры
         </Link>
         <Link href="/participants" className="btn btn-ghost">
           Участники
-        </Link>
-        <Link href="/pairings" className="btn btn-ghost">
-          Жеребьёвка
-        </Link>
-        <Link href="/rounds" className="btn btn-ghost">
-          Раунды
-        </Link>
-        <Link href="/results" className="btn btn-ghost">
-          Результаты
         </Link>
     </div>
   );

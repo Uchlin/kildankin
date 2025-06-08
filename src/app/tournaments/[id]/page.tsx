@@ -136,13 +136,13 @@ export default function TournamentDetailPage() {
       <table className="table w-full">
         <thead>
           <tr>
-            <th>Белые</th>
-            <th>Рейтинг</th>
-            <th>Очки до</th>
-            <th>Результат</th>
-            <th>Очки до</th>
-            <th>Черные</th>
-            <th>Рейтинг</th>
+            <th className="p-2 border">Белые</th>
+            <th className="p-2 border">Рейтинг</th>
+            <th className="p-2 border">Очки до</th>
+            <th className="p-2 border">Результат</th>
+            <th className="p-2 border">Очки до</th>
+            <th className="p-2 border">Черные</th>
+            <th className="p-2 border">Рейтинг</th>
           </tr>
         </thead>
         <tbody>
@@ -151,10 +151,10 @@ export default function TournamentDetailPage() {
             const blackScore = calculatePointsUntilRound(data.rounds, match.black.id, round.number);
             return (
               <tr key={match.id}>
-                <td>{match.white.lastName} {match.white.firstName}</td>
-                <td>{match.white.rating}</td>
-                <td>{whiteScore}</td>
-                <td>
+                <td className="p-2 border">{match.white.lastName} {match.white.firstName}</td>
+                <td className="p-2 border">{match.white.rating}</td>
+                <td className="p-2 border">{whiteScore}</td>
+                <td className="p-2 border">
                   <MatchResultEditor
                     matchId={match.id}
                     currentResult={match.result}
@@ -166,9 +166,9 @@ export default function TournamentDetailPage() {
                   />
                 </td>
 
-                <td>{blackScore}</td>
-                <td>{match.black.lastName} {match.black.firstName}</td>
-                <td>{match.black.rating}</td>
+                <td className="p-2 border">{blackScore}</td>
+                <td className="p-2 border">{match.black.lastName} {match.black.firstName}</td>
+                <td className="p-2 border">{match.black.rating}</td>
               </tr>
             );
           })}
