@@ -17,7 +17,12 @@ export async function POST(
       participants: true,
       rounds: {
         include: {
-          matches: true,
+          matches: {
+            include: {
+              white: true,
+              black: true,
+            },
+          },
         },
       },
     },

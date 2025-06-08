@@ -28,6 +28,7 @@ type TournamentWithParticipants = Awaited<ReturnType<typeof fetchTournamentsWith
 
 export default function ParticipantsPageClient({
   tournaments,
+  
 }: {
   tournaments: TournamentWithParticipants;
 }) {

@@ -19,12 +19,19 @@ export function TournamentActions({
   users,
   deleteTournament,
   editTournament,
+  currentUser,
+  showActions,
 }: {
   tournament: FullTournament;
   users: User[];
   deleteTournament: (formData: FormData) => void;
   editTournament: (formData: FormData) => void;
+  currentUser: { id: string; role: string };
+  showActions: boolean;
 }) {
+  const isOwner = currentUser.id === tournament.ownerId;
+  const isAdmin = currentUser.role === "ADMIN";
+  const canEdit = isOwner || isAdmin;
   const [isEditing, setIsEditing] = useState(false);
 
   const [formState, setFormState] = useState({
@@ -52,7 +59,7 @@ export function TournamentActions({
 
   return isEditing ? (
     <tr>
-      <td colSpan={6}>
+      <td colSpan={showActions ? 6 : 5}>
         <form
           action={editTournament}
           onSubmit={() => setIsEditing(false)}
@@ -126,26 +133,32 @@ export function TournamentActions({
       <td className="p-2 border">{tournament.roundsCount}</td>
       <td className="p-2 border">{tournament.participants.length} / {tournament.participantsCount}</td>
       <td className="p-2 border">{new Date(tournament.createdAt).toLocaleDateString()}</td>
-      <td className="flex gap-2 p-2 border">
-        <form action={deleteTournament}>
-          <input type="hidden" name="id" value={tournament.id} />
-          <button
-            type="submit"
-            className="btn btn-ghost text-xl"
-            onClick={(e) => {
-              if (!confirm("Удалить турнир?")) e.preventDefault();
-            }}
-          >
-            🗑
-          </button>
-        </form>
-        <button
-          className="btn btn-ghost text-xl"
-          onClick={() => setIsEditing(true)}
-        >
-          ✏
-        </button>
-      </td>
+      {showActions && (
+        <td className="flex gap-2 p-2 border">
+          {canEdit && (
+            <>
+              <form action={deleteTournament}>
+                <input type="hidden" name="id" value={tournament.id} />
+                <button
+                  type="submit"
+                  className="btn btn-ghost text-xl"
+                  onClick={(e) => {
+                    if (!confirm("Удалить турнир?")) e.preventDefault();
+                  }}
+                >
+                  🗑
+                </button>
+              </form>
+              <button
+                className="btn btn-ghost text-xl"
+                onClick={() => setIsEditing(true)}
+              >
+                ✏
+              </button>
+            </>
+          )}
+        </td>
+      )}
     </tr>
   );
 }

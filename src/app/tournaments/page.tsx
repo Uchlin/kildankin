@@ -1,6 +1,7 @@
 "use server";
 
 import { PrismaClient } from "@prisma/client";
+import { auth } from "~/server/auth";
 import { revalidatePath } from "next/cache";
 import { TournamentActions } from "../_components/tournament/TournamentActions";
 import { AddTournamentClient } from "../_components/tournament/AddTournamentClient";
@@ -8,6 +9,11 @@ import { AddTournamentClient } from "../_components/tournament/AddTournamentClie
 const prisma = new PrismaClient();
 
 export default async function TournamentsPage() {
+  const session = await auth();
+  if (!session?.user) {
+    return <div>Пожалуйста, войдите в систему</div>;
+  }
+  const currentUser = session.user;
   const tournaments = await prisma.tournament.findMany({
     include: {
       owner: true,
@@ -72,7 +78,9 @@ export default async function TournamentsPage() {
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Список турниров</h1>
-      <AddTournamentClient users={users} />
+      {(currentUser.role === "ADMIN" || currentUser.role === "ORGANIZER") && (
+        <AddTournamentClient users={users} currentUser={currentUser} />
+      )}
       <table className="table w-full border">
         <thead>
           <tr className=" text-white-600">
@@ -81,7 +89,9 @@ export default async function TournamentsPage() {
             <th className="p-2 border">Раунды</th>
             <th className="p-2 border">Участников</th>
             <th className="p-2 border">Создан</th>
-            <th className="p-2 border">Действия</th>
+            {(currentUser.role === "ADMIN" || currentUser.role === "ORGANIZER") && (
+              <th className="p-2 border">Действия</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -92,6 +102,8 @@ export default async function TournamentsPage() {
               users={users}
               deleteTournament={deleteTournament}
               editTournament={editTournament}
+              currentUser={currentUser}
+              showActions={currentUser.role === "ADMIN" || currentUser.role === "ORGANIZER"}
             />
           ))}
         </tbody>

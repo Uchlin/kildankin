@@ -5,9 +5,10 @@ type MatchResultEditorProps = {
   matchId: string;
   currentResult: MatchResult;
   onResultUpdated: () => void; // callback после обновления результата
+  canEdit?: boolean;
 };
 
-export function MatchResultEditor({ matchId, currentResult, onResultUpdated }: MatchResultEditorProps) {
+export function MatchResultEditor({ matchId, currentResult, onResultUpdated, canEdit }: MatchResultEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedResult, setSelectedResult] = useState(currentResult);
   const [isSaving, setIsSaving] = useState(false);
@@ -42,9 +43,11 @@ export function MatchResultEditor({ matchId, currentResult, onResultUpdated }: M
     return (
       <div className="flex items-center gap-2">
         <span>{formatResult(currentResult)}</span>
-        <button onClick={() => setIsEditing(true)} className="btn btn-ghost text-base px-1 py-1" title="Редактировать">
-          ✏
-        </button>
+        {canEdit && (
+          <button onClick={() => setIsEditing(true)} className="btn btn-ghost text-base px-1 py-1" title="Редактировать">
+            ✏
+          </button>
+        )}
       </div>
     );
   }

@@ -1,9 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import ParticipantsPageClient from "../_components/participants/ParticipantsPage";
+import { auth } from "~/server/auth";
 
 const prisma = new PrismaClient();
 
 export default async function ParticipantsPage() {
+  const session = await auth();
   const tournaments = await prisma.tournament.findMany({
     include: {
       participants: {
@@ -15,6 +17,7 @@ export default async function ParticipantsPage() {
       createdAt: "desc",
     },
   });
+  
 
   return <ParticipantsPageClient tournaments={tournaments} />;
 }

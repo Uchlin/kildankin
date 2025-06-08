@@ -20,6 +20,7 @@ type TournamentData = {
   id: string;
   name: string;
   roundsCount: number;
+  ownerId: string;
   rounds: RoundWithMatches[];
 };
 
@@ -29,6 +30,14 @@ export default function TournamentDetailPage() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRound, setSelectedRound] = useState<number>(1);
+  const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
+  const isOwner = data?.ownerId === currentUser?.id;
+  const canManage = currentUser?.role === "ADMIN" || (currentUser?.role === "ORGANIZER" && isOwner);
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then(res => res.json())
+      .then(data => setCurrentUser(data?.user || null));
+  }, []);
 
   useEffect(() => {
     fetch(`/api/tournament/${params.id}`)
@@ -65,13 +74,11 @@ export default function TournamentDetailPage() {
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-4">{data.name}</h1>
         <p className="mb-4 text-white-600">В турнире ещё нет туров.</p>
-        <button
-          onClick={handlePairing}
-          className="btn btn-primary"
-          disabled={isLoading}
-        >
-          {isLoading ? "Провожу жеребьёвку..." : "Провести жеребьёвку первого тура"}
-        </button>
+        {canManage && (
+          <button onClick={handlePairing} className="btn btn-primary" disabled={isLoading}>
+            {isLoading ? "Провожу жеребьёвку..." : "Провести жеребьёвку первого тура"}
+          </button>
+        )}
 
         <div className="mt-4">
           {message && (
@@ -121,15 +128,20 @@ export default function TournamentDetailPage() {
             </button>
         )}
       </div>
-      {selectedRound !== -1 && round && round.matches.every((m) => m.result !== "NONE") && selectedRound === data.rounds.length && selectedRound < data.roundsCount && (
-        <button
-          onClick={handlePairing}
-          className="btn btn-primary "
-          disabled={isLoading}
-        >
-          {isLoading ? "Провожу жеребьёвку..." : `Провести жеребьёвку тура ${selectedRound + 1}`}
-        </button>
+      {canManage &&
+        selectedRound !== -1 &&  round &&
+        round.matches.every((m) => m.result !== "NONE") &&
+        selectedRound === data.rounds.length &&
+        selectedRound < data.roundsCount && (
+          <button
+            onClick={handlePairing}
+            className="btn btn-primary"
+            disabled={isLoading}
+          >
+            {isLoading ? "Провожу жеребьёвку..." : `Провести жеребьёвку тура ${selectedRound + 1}`}
+          </button>
       )}
+
       {selectedRound === -1 ? (
   <FinalStandings rounds={data.rounds} participants={getAllParticipants(data.rounds)} />
     ) : (
@@ -163,6 +175,7 @@ export default function TournamentDetailPage() {
                       const updated = await fetch(`/api/tournament/${params.id}`).then(r => r.json());
                       setData(updated);
                     }}
+                    canEdit={canManage}
                   />
                 </td>
 

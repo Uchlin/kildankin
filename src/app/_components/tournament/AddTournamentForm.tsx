@@ -5,12 +5,21 @@ import type { User } from "@prisma/client";
 
 interface AddTournamentFormProps {
   users: User[];
+  currentUser: { id: string; role: string };
   onClose: () => void;
   addTournament: (formData: FormData) => Promise<void>;
 }
 
-export function AddTournamentForm({ users, onClose, addTournament }: AddTournamentFormProps) {
+export function AddTournamentForm({
+  users,
+  currentUser,
+  onClose,
+  addTournament,
+}: AddTournamentFormProps) {
   const [showForm, setShowForm] = useState(false);
+
+  const isAdmin = currentUser.role === "ADMIN";
+  const isOrganizer = currentUser.role === "ORGANIZER";
 
   if (!showForm) {
     return (
@@ -22,9 +31,9 @@ export function AddTournamentForm({ users, onClose, addTournament }: AddTourname
 
   return (
     <form
-      action={addTournament} // серверный action
+      action={addTournament}
       className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4"
-      onSubmit={() => onClose()} // после отправки скрываем форму
+      onSubmit={() => onClose()}
     >
       <input
         name="name"
@@ -40,14 +49,32 @@ export function AddTournamentForm({ users, onClose, addTournament }: AddTourname
         required
         min={2}
       />
-      <select name="ownerId" className="select select-bordered" required>
-        <option value="">Выберите организатора</option>
-        {users.map((u) => (
-          <option key={u.id} value={u.id}>
-            {u.lastName} {u.firstName}
-          </option>
-        ))}
-      </select>
+
+      {/* Админ может выбрать организатора, организатор — нет */}
+      {isAdmin ? (
+        <select name="ownerId" className="select select-bordered" required>
+          <option value="">Выберите организатора</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.lastName} {u.firstName}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <>
+          <input type="hidden" name="ownerId" value={currentUser.id} />
+          <div className="flex items-center font-medium">
+            Организатор:{" "}
+            {
+              users.find((u) => u.id === currentUser.id)?.lastName
+            }{" "}
+            {
+              users.find((u) => u.id === currentUser.id)?.firstName
+            }
+          </div>
+        </>
+      )}
+
       <div className="md:col-span-1">
         <button type="submit" className="btn btn-primary w-full">
           Создать

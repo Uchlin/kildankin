@@ -6,8 +6,9 @@ import { addTournament } from "../../api/action/tournament";
 
 interface AddTournamentClientProps {
   users: User[];
+  currentUser: { id: string; role: string };
 }
-export function AddTournamentClient({ users }: AddTournamentClientProps) {
+export function AddTournamentClient({ users, currentUser }: AddTournamentClientProps) {
   const router = useRouter();
 
   const handleClose = () => {
@@ -17,6 +18,7 @@ export function AddTournamentClient({ users }: AddTournamentClientProps) {
   return (
     <AddTournamentForm
       users={users}
+      currentUser={currentUser}
       onClose={handleClose}
       addTournament={addTournament}
     />
