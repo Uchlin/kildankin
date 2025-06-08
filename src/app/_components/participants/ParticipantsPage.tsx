@@ -28,13 +28,19 @@ type TournamentWithParticipants = Awaited<ReturnType<typeof fetchTournamentsWith
 
 export default function ParticipantsPageClient({
   tournaments,
-  
+  currentUser,
 }: {
   tournaments: TournamentWithParticipants;
+  currentUser: { id: string; role: "USER" | "ORGANIZER" | "ADMIN" };
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const canAddToTournament = (tournament: Tournament) =>
+  currentUser.role === "ADMIN" || (currentUser.role === "ORGANIZER" && tournament.ownerId === currentUser.id);
+
+  const canEdit = (tournament: Tournament) =>
+    currentUser.role === "ADMIN" || (currentUser.role === "ORGANIZER" && tournament.ownerId === currentUser.id);
   const handleToggle = (id: string) => {
     setExpanded((prev) => (prev === id ? null : id));
   };
@@ -77,29 +83,29 @@ export default function ParticipantsPageClient({
                         <th className="p-2 border">Фамилия</th>
                         <th className="p-2 border">Имя</th>
                         <th className="p-2 border">Рейтинг</th>
-                        <th className="p-2 border">Действия</th>
+                        {canEdit(tournament) && <th className="p-2 border">Действия</th>}
                       </tr>
                     </thead>
                     <tbody>
-                        {tournament.participants.map((p) => (
-                          <tr key={p.id}>
-                            {editingId === p.id ? (
-                              <EditParticipantRow participant={p} onCancel={() => setEditingId(null)} onSave={() => {
+                      {tournament.participants.map((p) => (
+                        <tr key={p.id}>
+                          {editingId === p.id ? (
+                            <EditParticipantRow
+                              participant={p}
+                              onCancel={() => setEditingId(null)}
+                              onSave={() => {
                                 setEditingId(null);
                                 router.refresh();
-                              }} />
-                            ) : (
-                              <>
-                                <td className="p-2 border">{p.lastName}</td>
-                                <td className="p-2 border">{p.firstName}</td>
-                                <td className="p-2 border">{p.rating}</td>
+                              }}
+                            />
+                          ) : (
+                            <>
+                              <td className="p-2 border">{p.lastName}</td>
+                              <td className="p-2 border">{p.firstName}</td>
+                              <td className="p-2 border">{p.rating}</td>
+                              {canEdit(tournament) && (
                                 <td className="flex gap-2 p-2 border">
-                                  <button
-                                    onClick={() => setEditingId(p.id)}
-                                    className="btn btn-ghost text-xl "
-                                  >
-                                    ✏️
-                                  </button>
+                                  <button onClick={() => setEditingId(p.id)} className="btn btn-ghost text-xl">✏️</button>
                                   <button
                                     onClick={async () => {
                                       const confirmDelete = confirm(`Удалить ${p.lastName} ${p.firstName}?`);
@@ -123,16 +129,20 @@ export default function ParticipantsPageClient({
                                     🗑
                                   </button>
                                 </td>
-                              </>
-                            )}
-                          </tr>
-                        ))}
+                              )}
+                            </>
+                          )}
+                        </tr>
+                      ))}
                     </tbody>
+
                   </table>
                 )}
               </div>
             )}
-            <AddParticipantForm tournamentId={tournament.id} router={router} />
+            {canAddToTournament(tournament) && (
+              <AddParticipantForm tournamentId={tournament.id} router={router} />
+            )}
           </div>
         ))
       )}
