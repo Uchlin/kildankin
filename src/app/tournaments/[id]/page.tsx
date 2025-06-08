@@ -5,6 +5,7 @@ import { Participant, Match, Round } from "@prisma/client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { MatchResultEditor } from "~/app/_components/tournament/MatchResultEditor";
+import { FinalStandings, getAllParticipants } from "~/app/_components/tournament/FinalStandings";
 
 type MatchWithPlayers = Match & {
   white: Participant;
@@ -90,8 +91,11 @@ export default function TournamentDetailPage() {
       </div>
     );
   }
-  const round = data.rounds.find((r) => r.number === selectedRound);
-  if (!round) return <div>Тур {selectedRound} не найден</div>;
+  const round = selectedRound !== -1 ? data.rounds.find((r) => r.number === selectedRound) : null;
+
+  if (selectedRound !== -1 && !round) {
+    return <div>Тур {selectedRound} не найден</div>;
+  }
 
   return (
     <div className="p-6">
@@ -107,8 +111,17 @@ export default function TournamentDetailPage() {
             Тур {r.number}
           </button>
         ))}
+        {data.rounds.length === data.roundsCount &&
+          data.rounds.every((r) => r.matches.every((m) => m.result !== "NONE")) && (
+            <button
+              onClick={() => setSelectedRound(-1)} // -1 будет обозначать "итоговую таблицу"
+              className={`btn ${selectedRound === -1 ? "btn-primary" : "btn-outline"}`}
+            >
+              Результаты
+            </button>
+        )}
       </div>
-      {round.matches.every((m) => m.result !== "NONE") && selectedRound === data.rounds.length && selectedRound < data.roundsCount && (
+      {selectedRound !== -1 && round && round.matches.every((m) => m.result !== "NONE") && selectedRound === data.rounds.length && selectedRound < data.roundsCount && (
         <button
           onClick={handlePairing}
           className="btn btn-primary "
@@ -117,7 +130,9 @@ export default function TournamentDetailPage() {
           {isLoading ? "Провожу жеребьёвку..." : `Провести жеребьёвку тура ${selectedRound + 1}`}
         </button>
       )}
-
+      {selectedRound === -1 ? (
+  <FinalStandings rounds={data.rounds} participants={getAllParticipants(data.rounds)} />
+    ) : (
       <table className="table w-full">
         <thead>
           <tr>
@@ -131,7 +146,7 @@ export default function TournamentDetailPage() {
           </tr>
         </thead>
         <tbody>
-          {round.matches.map((match) => {
+          {selectedRound !== -1 && round && round.matches.map((match) => {
             const whiteScore = calculatePointsUntilRound(data.rounds, match.white.id, round.number);
             const blackScore = calculatePointsUntilRound(data.rounds, match.black.id, round.number);
             return (
@@ -159,13 +174,15 @@ export default function TournamentDetailPage() {
           })}
         </tbody>
       </table>
+    )}
+      
 
       <Link href="/tournaments" className="btn btn-secondary mt-4">← Назад</Link>
     </div>
   );
 }
 
-// 🔢 Функция подсчёта очков игрока до указанного тура
+// Функция подсчёта очков игрока до указанного тура
 function calculatePointsUntilRound(rounds: RoundWithMatches[], participantId: string, roundNumber: number): number {
   let points = 0;
   for (const round of rounds) {
@@ -183,12 +200,3 @@ function calculatePointsUntilRound(rounds: RoundWithMatches[], participantId: st
   }
   return points;
 }
-// function formatResult(result: MatchResult): string {
-//   switch(result) {
-//     case "WHITE_WIN": return "1-0";
-//     case "BLACK_WIN": return "0-1";
-//     case "DRAW": return "½-½";
-//     case "NONE": return "-";
-//     default: return "-";
-//   }
-// }

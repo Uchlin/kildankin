@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient, Participant, MatchResult } from "@prisma/client";
+import { PrismaClient, Participant, MatchResult, Round, Match } from "@prisma/client";
 import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
@@ -45,21 +45,28 @@ export async function POST(
   }[] = [];
 
   if (isFirstRound) {
-    // Первый раунд: случайная жеребьёвка
     const shuffled = [...tournament.participants].sort(() => Math.random() - 0.5);
 
     for (let i = 0; i < shuffled.length; i += 2) {
-      const white = shuffled[i];
-      const black = shuffled[i + 1];
+        const white = shuffled[i];
+        const black = shuffled[i + 1];
 
-      if (!white || !black) continue;
-
-      matches.push({
-        id: randomUUID(),
-        whiteId: white.id,
-        blackId: black.id,
-        result: "NONE",
-      });
+        if (white && black) {
+            matches.push({
+                id: randomUUID(),
+                whiteId: white.id,
+                blackId: black.id,
+                result: "NONE",
+            });
+        } else if (white && !hasHadBye(white.id, previousRounds)) {
+        // Нечётное число участников: white получает bye
+        matches.push({
+            id: randomUUID(),
+            whiteId: white.id,
+            blackId: white.id, // или можно использовать специальный null или dummy ID
+            result: "WHITE_WIN",
+        });
+        }
     }
   } else {
     // Следующие раунды: швейцарская система
@@ -137,7 +144,7 @@ export async function POST(
     }
 
     // Если один игрок остался непарным — получает bye (опционально)
-    if (carryOver && !used.has(carryOver.id)) {
+    if (carryOver && !used.has(carryOver.id)&& !hasHadBye(carryOver.id, previousRounds)) {
       // Добавляем фиктивный матч с автоматической победой (например, белыми)
       matches.push({
         id: randomUUID(),
@@ -162,4 +169,14 @@ export async function POST(
   });
 
   return NextResponse.json({ message: "Жеребьёвка завершена", round });
+}
+function hasHadBye(participantId: string, rounds: (Round & { matches: Match[] })[]): boolean {
+  return rounds.some((round) =>
+    round.matches.some(
+      (match) =>
+        match.result === "WHITE_WIN" &&
+        match.whiteId === participantId &&
+        match.blackId === participantId // bye-признак
+    )
+  );
 }
